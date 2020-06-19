@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 const { check, validationResult } = require('express-validator');
+const normalize = require('normalize-url');
 
 //importar el modelo de la estructura del usuario
 const User = require('../../models/User');

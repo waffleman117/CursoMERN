@@ -4,9 +4,11 @@ const config = require('config');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
+const normalize = require('normalize-url');
 
 const Profile = require('../../models/Profile');
 const User = require('../../models/User');
+const Post = require('../../models/Post');
 
 // @route   GET api/profile/me  <-- solo 1, si fuera api/profile serian TODOS los perfiles a obtener
 // @desc    obtener el perfil del usuario actual
@@ -84,6 +86,7 @@ router.post(
     //Construir objeto de las redes sociales del perfil, creamos el campo 'social' como objeto vacio y agregamos lo necesario
     profileFields.social = {};
     if (twitter) profileFields.social.twitter = twitter;
+    if (youtube) profileFields.social.youtube = youtube;
     if (facebook) profileFields.social.facebook = facebook;
     if (linkedin) profileFields.social.linkedin = linkedin;
     if (instagram) profileFields.social.instagram = instagram;
@@ -156,6 +159,7 @@ router.get('/user/:user_id', async (req, res) => {
 router.delete('/', auth, async (req, res) => {
   try {
     //@todo - remove users posts (remover posts del usuario en el futuro)
+    await Post.deleteMany({ user: req.user.id });
     //Remove profile
     await Profile.findOneAndRemove({ user: req.user.id });
     //Remove user
@@ -339,7 +343,7 @@ router.get('/github/:username', async (req, res) => {
     request(options, (error, response, body) => {
       if (error) console.error(error);
 
-      if (response.status !== 200) {
+      if (response.statusCode !== 200) {
         res.status(404).json({ msg: 'No se encontro el perfil de github' });
       }
       //body es un simple string asi que usamos JSON.parse para que se envie como un objeto con el string dentro
